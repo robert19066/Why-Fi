@@ -1,5 +1,5 @@
-# Get all Wi-Fi profiles saved on the system
 Clear-Host
+# Get all Wi-Fi profiles
 $wifiProfiles = @(netsh wlan show profiles | Where-Object { $_ -match "All User Profile" } | ForEach-Object {
     ($_ -split ":")[1].Trim()
 })
@@ -17,8 +17,12 @@ if ($wifiProfiles -contains $usr_input) {
     $result = netsh wlan show profile name="$usr_input" key=clear
     $password = $result | Select-String -Pattern "Key Content" | ForEach-Object { ($_ -split ":")[1].Trim() }
     
+    # Get Wi-Fi signal strength for the currently connected network
+    $signalStrength = (netsh wlan show interfaces | Select-String -Pattern "Signal" | ForEach-Object { ($_ -split ":")[1].Trim() }).Trim("%")
+    
     if ($password) {
         Write-Host "Password for '$usr_input': $password" -ForegroundColor Cyan
+        Write-Host "Signal Strength: $signalStrength%" -ForegroundColor Cyan
     } else {
         Write-Host "Password not found for the selected profile. It may not be stored on this system." -ForegroundColor Red
     }
